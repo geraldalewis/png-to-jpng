@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>JPNG</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    html {
+      background-color: #fff;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: #fff;
+      font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+      font-size: 14px;
+      line-height: 24px;
+      margin: 0;
+      padding: 0;
+    }
+    h1,h2,h3 {
+      font-weight: 500;
+      font-size: 20px;
+      line-height: 32px;
+      margin: 0 0 10px 0;
+    }
+    h3 {
+      color: #333;
+      font-size: 15px;
+      line-height: 18px;
+      font-weight: 700;
+      margin: 0 0 5px 0;
+    }
+    p,pre {
+      margin: 0 0 10px 0;
+    }
+    article, section {
+      padding: 10px 20px;
+      margin: 0 auto 20px auto;
+      max-width: 800px;
+    }
+    article > article {
+      padding: 0px;
+      margin: 0 0 30px 0;
+      max-width: 780px;
+    }
+    article > article:first-of-type {
+      margin-top: 36px;
+    }
+
+    button {
+      cursor: pointer;
+      -webkit-tap-highlight-color: rgba(0,0,0,0);
+      color: inherit;
+      margin: 0;
+      padding: 0;
+      outline: none;
+      border: none;
+      background: none;
+      font-size: inherit;
+    }
+    .mono {
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+    }
+    .visually-hidden {
+      border: 0 !important;
+      height: 1px !important;
+      overflow: hidden !important;
+      padding: 0 !important;
+      position: absolute !important;
+      width: 1px !important;
+      white-space: nowrap !important;
+    }
+
+    .drop-zone {
+      height: 200px;
+      margin: 50px auto;
+      min-width: 280px;
+      max-width: 800px;
+    }
+    .dnd-not-supported {
+      background-color: #ff0000;
+    }
+
+    .btn {
+      padding: 8px 10px;
+      font-size: 16px;
+      line-height: 20px;
+      text-align: center;
+      height: 36px;
+      text-decoration: none;
+      border-radius: 4px;
+      color: #fff;
+      box-shadow: 0px 2px 4px 0px rgba(0, 128, 192, 0.2);
+      text-shadow: 0px 1px 1px rgba(0,32,0,.3);
+      white-space: pre;
+    }
+
+    .code-inline {
+      white-space: pre;
+      padding: 2px 4px;
+      background-color: #f6f8fa;
+    }
+    .code {
+      white-space: pre;
+      padding: 10px;
+      background-color: #f6f8fa;
+      border-top: 1px solid #e6f8fa;
+      overflow-x: auto;
+    }
+    .code:focus {
+      outline: none;
+    }
+    .code::-webkit-scrollbar {
+      height: 8px;
+      background-color: rgba(0,0,0,.07);
+    }
+    .code::-webkit-scrollbar-thumb {
+      border-radius: 4px;
+      background: rgba(0,0,0,.13); 
+    }
+
+    .code__tag {
+      color: #445B7E;
+    }
+    .code__prop {
+      color: #445B7E;
+    }
+    .code__assign {
+      color: #7799aa;
+    }
+    .code__value {
+      color: #032f62;
+    }
+    .code__operator {
+      color: #d73a49;
+    }
+    .code__method {
+      color: #6f42c1;
+    }
+    .code__string {
+      color: #d73a49;
+    }
+    .code__this {
+      color: #005cc5;
+    }
+
+
+    .results-compare {
+    }
+    .results-compare__container {
+      margin: 0 auto;
+      text-align: center;
+    }
+    .results-compare__image {
+      position: relative;
+      display: inline-block;
+      min-width: 200px;
+      background-color: #ccc;
+      margin: 0 10px 10px 0;
+    }
+    .results-compare__header {
+      background-color: #fff;
+    }
+    .results-compare__download {
+      position: absolute;
+      right: -8px;
+      bottom: -18px;
+      background-color: #00dd77;
+      background-image: linear-gradient(0deg, rgba(0,192,64,.3), rgba(0,255,255,.01) 35%);
+    }
+
+    .results-compare__name {
+      font-size: 16px;
+      font-weight: 600;
+    }
+    .results-compare__kb {
+      font-size: 16px;
+    }
+    .results-compare__unit {
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+      font-size: 12px;
+    }
+    .results-compare__compressed {
+      color: #009933;
+      font-weight: 600;
+    }
+
+    .compare-range__container {
+      display: block;
+      padding: 10px 0px;
+    }
+
+    .results-copy__container {
+      position: relative;
+    }
+    .results-copy__button {
+      background-color: #00bbff;
+      text-shadow: 0px 1px 1px rgba(0,18,64,.23);
+      margin-right: 5px;
+      position: absolute;
+      right: -8px;
+      bottom: -18px;
+    }
+
+    .compare-range__range {
+      margin: 0;
+      padding: 0;
+      border: none;
+      width: 100%;
+    }
+    .compare-range__sizes {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .jpng-results {
+      padding: 10px;
+      margin: 20px auto;
+    }
+
+    .jpng-results > ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    img[data-jpng="loading"], img[data-jpng="processing"] {
+      visibility: hidden;
+    }
+
+input[type=range] {
+  -webkit-appearance: none;
+  width: 100%;
+  margin: 2px 0;
+}
+input[type=range]:focus {
+  outline: none;
+}
+input[type=range]::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 14px;
+  cursor: pointer;
+  box-shadow: 1px 1px 1px rgba(0, 0, 0, 0), 0px 0px 1px rgba(13, 13, 13, 0);
+  background: #e8e8e8;
+  border-radius: 6px;
+  border: 0px solid rgba(0, 0, 0, 0);
+}
+input[type=range]::-webkit-slider-thumb {
+  box-shadow: 0px 0px 0.8px rgba(104, 120, 138, 0.28), 0px 0px 0px rgba(117, 133, 151, 0.28);
+  border: 4px solid rgba(99, 99, 99, 0.3);
+  height: 18px;
+  width: 18px;
+  border-radius: 18px;
+  background: #f8fcff;
+  cursor: pointer;
+  -webkit-appearance: none;
+  margin-top: -2px;
+}
+input[type=range]:focus::-webkit-slider-runnable-track {
+  background: #f5f5f5;
+}
+input[type=range]::-moz-range-track {
+  width: 100%;
+  height: 14px;
+  cursor: pointer;
+  box-shadow: 1px 1px 1px rgba(0, 0, 0, 0), 0px 0px 1px rgba(13, 13, 13, 0);
+  background: #e8e8e8;
+  border-radius: 6px;
+  border: 0px solid rgba(0, 0, 0, 0);
+}
+input[type=range]::-moz-range-thumb {
+  box-shadow: 0px 0px 0.8px rgba(104, 120, 138, 0.28), 0px 0px 0px rgba(117, 133, 151, 0.28);
+  border: 4px solid rgba(99, 99, 99, 0.3);
+  height: 18px;
+  width: 18px;
+  border-radius: 18px;
+  background: #f8fcff;
+  cursor: pointer;
+}
+input[type=range]::-ms-track {
+  width: 100%;
+  height: 14px;
+  cursor: pointer;
+  background: transparent;
+  border-color: transparent;
+  color: transparent;
+}
+input[type=range]::-ms-fill-lower {
+  background: #dbdbdb;
+  border: 0px solid rgba(0, 0, 0, 0);
+  border-radius: 12px;
+  box-shadow: 1px 1px 1px rgba(0, 0, 0, 0), 0px 0px 1px rgba(13, 13, 13, 0);
+}
+input[type=range]::-ms-fill-upper {
+  background: #e8e8e8;
+  border: 0px solid rgba(0, 0, 0, 0);
+  border-radius: 12px;
+  box-shadow: 1px 1px 1px rgba(0, 0, 0, 0), 0px 0px 1px rgba(13, 13, 13, 0);
+}
+input[type=range]::-ms-thumb {
+  box-shadow: 0px 0px 0.8px rgba(104, 120, 138, 0.28), 0px 0px 0px rgba(117, 133, 151, 0.28);
+  border: 4px solid rgba(99, 99, 99, 0.3);
+  height: 18px;
+  width: 18px;
+  border-radius: 18px;
+  background: #f8fcff;
+  cursor: pointer;
+  height: 14px;
+}
+input[type=range]:focus::-ms-fill-lower {
+  background: #e8e8e8;
+}
+input[type=range]:focus::-ms-fill-upper {
+  background: #f5f5f5;
+}
+
+
+  </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>jpng</h1>
+      </header>
+      <section class="drop-zone-section">
+        <div id="drop-zone" class="drop-zone"></div>
+      </section>
+      <section class="jpng-results" id="jpng-results">
+        <header>
+          <h2>Results</h2>
+        </header>
+        <ul>
+          <li class="results-compare">
+            <div class="results-compare__container">
+              <div class="results-compare__image">
+                <p class="results-compare__header"><span class="results-compare__name">original</span> <span class="results-compare__kb">120</span><span class="results-compare__unit">kb</span></p>
+                <img src="car.png" width="536" height="224">
+              </div>
+              <div class="results-compare__image">
+                <p class="results-compare__header"><span class="results-compare__name">jpng</span> <span class="results-compare__kb">18</span><span class="results-compare__unit">kb</span> <span class="results-compare__compressed">(-80%)</span></p>
+                <img src="car.png" width="536" height="224">
+                <a href="car-jpng.jpg" download="car-jpng.jpg" class="btn results-compare__download">Download jpng</a>
+              </div>
+            </div>
+            <br>
+            <section class="results-compare__controls">
+              <div class="compare-range__container">
+                <input type="range" name="kbs" class="compare-range__range">
+                <div class="compare-range__sizes">
+                  <div>
+                    <span class="results-compare__kb">18</span><span class="results-compare__unit">kb</span>
+                  </div>
+                  <div>
+                    <span class="results-compare__kb">180</span><span class="results-compare__unit">kb</span>
+                  </div>
+                </div>
+              </div>
+              <div class="results-copy__container">
+                <pre class="mono code" 
+                  contenteditable="true" 
+                  spellcheck="false"
+                >&lt;<span class="code__tag">img</span> <span class="code__prop">onload</span><span class="code__assign">=</span><span class="code__value">"<span class="code__operator">typeof</span> jpng === <span class="code__string">'function'</span> && jpng.<span class="code__method">processIMG</span>(<span class="code__this">this</span>)"</span>
+     <span class="code__prop">src</span><span class="code__assign">=</span><span class="code__value">"car-jpng.jpg"</span>
+     <span class="code__prop">height</span><span class="code__assign">=</span><span class="code__value">"536"</span>
+     <span class="code__prop">width</span><span class="code__assign">=</span><span class="code__value">"224"</span>
+     <span class="code__prop">data-jpng</span><span class="code__assign">=</span><span class="code__value">"loading"</span>
+     <span class="code__prop">data-jpg-vertical</span><span class="code__assign">=</span><span class="code__value">"true"</span>&gt;</pre>
+                <button class="btn results-copy__button" 
+                  onclick="copyIMGTag(this)"
+                  data-tag='<img onload=&quot;typeof jpng === &quot;function&quot; && jpng.processIMG(this)&quot;\n     src=&quot;car-jpng.jpg&quot;\n     height=&quot;536&quot;\n     width=&quot;224&quot;\n     data-jpng=&quot;loading&quot;\n     data-jpg-vertical=&quot;true&quot;>'
+                >Copy &lt;img&gt; tag</button>
+              </div>
+            </section>
+          </li>
+        </ul>
+      </section>
+      <article>
+        <header><h2>Usage</h2></header>
+        <p>You'll need to include the jpng library to transform the compressed JPG files back into PNGs. jpng can be installed via npm or yarn, and imported as an ES6 module if you're using a modern bundler. There's also an <span class="mono code-inline">iife</span> version that can be downloaded from a CDN.</p><p>Once included, any <span class="mono code-inline">img</span> tags with a <span class="mono code-inline">data-jpng</span> attribute set to <span class="mono code-inline">"loading"</span> will be automatically converted.</p>
+        <article>
+          <header><h3>CDN</h3></header>
+          <p>You can drop in the minified jpng library with a simple <span class="mono code-inline">&lt;script&gt;</span> tag. You can safely use the <span class="mono code-inline">async</span> attribute, since load order doesn't matter.</p>
+          <pre class="mono code" 
+          contenteditable="true"
+          spellcheck="false"
+          onclick="this.focus(), document.execCommand('selectAll',false,null)"
+        >&lt;<span class="code__tag">script</span> <span class="code__prop">async</span> <span class="code__prop">src</span><span class="code__assign">=</span>"https://unpkg.com/jpng@latest/dist/jpng.js"&gt;&lt;/<span class="code__tag">script</span>&gt;</pre>
+        </article>
+        <article>
+          <header><h3>NPM</h3></header>
+          <p>jpng can be installed with npm or yarn.</p>
+          <pre class="mono code"
+            contenteditable="true"
+            spellcheck="false"
+            onclick="this.focus(), document.execCommand('selectAll',false,null)"
+          >npm install jpng</pre>
+          <p>jpng is written as an ES6 module, so it can be bundled into your project with webpack 2 or rollup.</p>
+          <pre class="mono code"><span class="code__operator">import</span> jpng from <span class="code__string">'jpng'</span></pre>
+        </article>
+        <article>
+          <header><h3>CSS</h3></header>
+          <p>You may see the unprocessed image flash briefly just after it loads, so it's a good idea to add some CSS to hide it until it's ready.</p>
+          <pre class="mono code"
+            contenteditable="true"
+            spellcheck="false"
+            onclick="this.focus(), document.execCommand('selectAll',false,null)"
+            ><span class="code__tag">img</span>[<span class="code__prop">data-jpng</span><span class="code__assign">=</span><span class="code__value">"loading"</span>], <span class="code__tag">img</span>[<span class="code__prop">data-jpng</span><span class="code__assign">=</span><span class="code__value">"processing"</span>] {
+  visibility: <span class="code__string">hidden</span>;
+}</pre>
+        </article>
+      </article>
+      <article>
+        <header><h2>What is it?</h2></header>
+        <p>PNG files use lossless compression, and have transparency support. JPG files are lossy, but don't support transparency. Sometimes you want the lossy compression of JPG, but need the transparency of PNG. jpng images use JavaScript and the <code>Context2d</code> API to give developers just that.</p>
+      </article>
+      <article>
+        <header><h2>Why use jpng?</h2></header>
+        <p>Tools like <a href="http://tinypng.com">TinyPNG</a> do a great job minifying PNG files, often with little-to-no loss in perceived quality. But there are some instances when it would be worth using a jpng image:</p>
+        <ul>
+          <li>When every byte counts</li>
+          <li>A small (but perceptible) loss in quality is acceptable</li>
+          <li>When reducing filesize is worth the tradeoff of introducing some complexity to your build</li>
+        </ul>
+      </article>
+      <article>
+        <header><h2>How does it work?</h2></header>
+        <p>jpng works by first separating the color and transparency data from your PNG file.</p>
+        <p>This data is used to create two new images: one with the color data (and no transparency) and a second greyscale matte image with the transparency data.</p>
+        <p>The color and matte images are placed side-by-side in a single image and compressed using JPG compression. Using a single JPG cuts down on network requests and even saves some file size.</p>
+        <p>When your page or app loads, the script looks for any jpng images attached to the DOM. It then uses the Context2d API (from &lt;Canvas&gt;) to re-create the original image with both color and transparency restored.</p>
+      </article>
+      <article>
+        <header><h2>Isn't manipulating all that pixel data slow?</h2></header>
+        <p>Using a jpng image is more taxing on a user's system resources than using a vanilla PNG file. That said, some important performance optimizations were made. jpng does not use <code>getImageData</code> to extract/apply transparency data, which can be very slow. Instead jpng composites using <code>drawImage</code> with the <code>xor</code> operator (which is surprisingly fast).</p>
+      </article>
+      <footer></footer>
+    </main>
+    <!--<script src="./index.js"></script>-->
+  </body>
+</html>

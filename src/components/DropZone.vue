@@ -1,5 +1,16 @@
-import pngToJPNG from '../lib/png-to-jpng';
-import { appendResults } from './jpng-results';
+<template>
+  <section class="drop-zone-section">
+    <div id="drop-zone" 
+      class="drop-zone"
+      @dragenter="ondragenter"
+      @dragleave="ondragleave"
+      @drop="ondropped"
+    ></div>
+  </section>
+</template>
+
+<script>
+import pngToJPNG from '../../lib/png-to-jpng';
 import jpng from 'jpng';
 
 const supported = pngToJPNG.supported &&
@@ -80,41 +91,43 @@ function convertToJPNG(record){
   });
 }
 
-function ondropped(e){
-  // Note: `files` is a `FileList` object, which looks like an Array object, but is not.
-  const files = e.dataTransfer.files,
-        len = files.length, records = [],
-        promises = [];
-  for (let file, i = 0; i < len; i++) {
-    file = files.item(i);
-    records.push(createRecord(file));
+export default {
+  name: 'drop-zone',
+  methods: {
+    ondragenter(){},
+    ondragleave(){},
+    ondropped(e){
+      // Note: `files` is a `FileList` object, which looks like an Array object, but is not.
+      const files = e.dataTransfer.files,
+            len = files.length, records = [],
+            promises = [];
+      for (let file, i = 0; i < len; i++) {
+        file = files.item(i);
+        records.push(createRecord(file));
+      }
+      records.forEach( (record) => {
+        let promise = null;
+        promise = readImage(record).then(convertToJPNG).catch( (record) => Promise.resolve(record));
+        promises.push(promise);
+      });
+      Promise.all(promises).then( (records) => {
+        appendResults(records);
+      });
+    }
+  },
+  mounted(){
+    if (!supported) this.$el.classList.add('dnd-not-supported');
   }
-  records.forEach( (record) => {
-    let promise = null;
-    promise = readImage(record).then(convertToJPNG).catch( (record) => Promise.resolve(record));
-    promises.push(promise);
-  });
-  Promise.all(promises).then( (records) => {
-    appendResults(records);
-  });
 }
-
-function createDropZone(){
-  const zone = document.getElementById('drop-zone');
-
-  if (!supported) {
-    zone.classList.add('dnd-not-supported');
-    return;
+</script>
+<style>
+  .drop-zone {
+    height: 200px;
+    margin: 50px auto;
+    min-width: 280px;
+    max-width: 800px;
   }
-
-  zone.style.backgroundColor = '#00ff00';
-  zone.addEventListener('dragenter', (e) => {
-    zone.style.backgroundColor = '#ff0000';
-  });
-  zone.addEventListener('dragleave', (e) => {
-    zone.style.backgroundColor = '#00ff00';
-  });
-  zone.addEventListener('drop', ondropped);
-}
-
-export default createDropZone;
+  .dnd-not-supported {
+    background-color: #ff0000;
+  }
+</style>
