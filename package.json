@@ -1,5 +1,5 @@
 {
-  "name": "jpng-app",
+  "name": "png-to-jpng",
   "version": "0.1.0",
   "description": "Create JPNGs from PNGs",
   "main": "dist/png-to-jpng.js",
@@ -7,16 +7,29 @@
   "author": "geraldalewis <gerald.a.lewis@gmail.com>",
   "repository": {
     "type": "git",
-    "url": "https://github.com/geraldalewis/jpng-app.git"
+    "url": "https://github.com/geraldalewis/png-to-jpng.git"
   },
   "bugs": {
-    "url": "https://github.com/geraldalewis/jpng-app/issues"
+    "url": "https://github.com/geraldalewis/png-to-jpng/issues"
   },
-  "homepage": "https://github.com/geraldalewis/jpng-app",
+  "homepage": "https://github.com/geraldalewis/png-to-jpng",
   "license": "MIT",
   "scripts": {
     "lint": "eslint lib/*.js src/*.js",
     "test": "yarn run lint",
+    "dev": "rollup -c -w",
     "build": "rollup -c"
+  },
+  "dependencies": {
+    "jpng": "^0.1.0"
+  },
+  "devDependencies": {
+    "buble": "^0.15.2",
+    "rollup": "^0.42.0",
+    "rollup-plugin-buble": "^0.15.0",
+    "rollup-plugin-copy": "^0.2.3",
+    "rollup-plugin-node-resolve": "^3.0.0",
+    "rollup-plugin-uglify": "^2.0.1",
+    "rollup-watch": "^4.0.0"
   }
 }
