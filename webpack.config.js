@@ -5,12 +5,7 @@ const isProd = process.env.NODE_ENV === 'production';
 
 const config = {
   devtool: isProd ? false : '#cheap-module-eval-source-map',
-  entry: {
-    app: './src/index.js',
-    vendor: [
-      'vue'
-    ]
-  },
+  entry: './src/index.js',
   output: {
     path: path.resolve(__dirname, './www'),
     publicPath: '',
@@ -22,7 +17,7 @@ const config = {
         test: /\.vue$/,
         loader: 'vue-loader',
         options: {
-          preserveWhitespace: false,
+          preserveWhitespace: true,
           postcss: [
             require('autoprefixer')()
           ]
@@ -56,10 +51,6 @@ const config = {
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
       'process.env.VUE_ENV': '"client"'
-    }),
-    // extract vendor chunks for better caching
-    new webpack.optimize.CommonsChunkPlugin({
-      name: ['vendor']
     }),
     // generate output HTML
     new HTMLPlugin({
