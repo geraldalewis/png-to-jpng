@@ -1,17 +1,19 @@
 <template>
-  <main id="app">
-    <drop-zone @appendJPNGResults="onappend"></drop-zone>
-    <jpng-results 
-      :results="nonRemovedResults"
-      v-show="nonRemovedResults.length > 0"
-    ></jpng-results>
+  <div id="app">
+    <main>
+      <drop-zone @appendJPNGResults="onappend"></drop-zone>
+      <jpng-results 
+        :results="nonRemovedResults"
+        v-show="nonRemovedResults.length > 0"
+      ></jpng-results>
+    </main>
     <about-jpng></about-jpng>
     <jpng-usage></jpng-usage>
     <footer>
       Icons courtesy of the open source <a href="http://colebemis.com/feather/">Feather</a> icon set <a href="https://github.com/colebemis/feather/blob/gh-pages/LICENSE">[LICENSE]</a>.
       Rooster image from <a href="https://pixabay.com/en/hahn-isolated-bird-gockel-attack-2408738/">Pixabay</a>.
     </footer>
-  </main>
+  </div>
 </template>
 
 <script>
@@ -20,6 +22,8 @@ import AboutJpng from './sections/AboutJpng.vue';
 import DropZone from './sections/DropZone.vue';
 import JpngUsage from './sections/JpngUsage.vue';
 import JpngResults from './sections/JpngResults.vue';
+
+import prismCSS from 'prismjs/themes/prism.css';
 
 function preventImageDropRedirect(e){
   e.preventDefault();
@@ -97,6 +101,10 @@ h4 {
 p,pre,figure {
   margin: 0 0 10px 0;
 }
+main {
+  margin: 0 auto 20px auto;
+  max-width: 800px;
+}
 article, section {
   padding: 10px 20px;
   margin: 0 auto 20px auto;
@@ -125,6 +133,7 @@ button {
   background: none;
   font-size: inherit;
 }
+
 
 .mono {
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;

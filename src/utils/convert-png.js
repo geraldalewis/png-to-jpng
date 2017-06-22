@@ -1,34 +1,6 @@
 import pngToJPNG from '../../lib/png-to-jpng';
 import jpng from 'jpng';
 
-/*
-function convertPNG(record, quality){
-  return new Promise( (resolve, reject) => {
-    pngToJPNG(record.input.dataURL, quality, (out) => {
-      const img = new Image();
-      img.onerror = (error) => {
-        img.onerror = img.onload = null;
-        record.error = error;
-        reject(record);
-      }
-      img.onload = () => {
-        img.onerror = img.onload = null;
-        record.result.img = img;
-        try {
-          record.result.canvas = jpng(img, record.output.x, record.output.y, record.output.w, record.output.h);
-          resolve(record);
-        } catch (e) {
-          record.error = e;
-          reject(record);
-        }
-      };
-      record.output = out;
-      img.src = out.url;
-    });
-  });
-}
-*/
-
 function convertPNG(record, quality){
   return new Promise( (resolve, reject) => {
     pngToJPNG(record.input.dataURL, quality, (out) => {

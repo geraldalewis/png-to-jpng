@@ -21,7 +21,8 @@
     "build": "cross-env NODE_ENV=production webpack --progress --hide-modules"
   },
   "dependencies": {
-    "jpng": "^0.2.0"
+    "jpng": "^0.2.0",
+    "prismjs": "^1.6.0"
   },
   "devDependencies": {
     "buble": "^0.15.2",

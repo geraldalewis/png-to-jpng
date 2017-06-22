@@ -1,34 +1,41 @@
 <template>
-  <section class="drop-zone-section">
-    <div id="drop-zone" 
-      class="drop-zone"
-      @dragenter="ondragenter"
-      @dragleave="ondragleave"
-      @drop="ondropped"
-    >
-      <div class="drop-zone_cta">
+  <header 
+    id="drop-zone" 
+    @dragenter="ondragenter"
+    @dragleave="ondragleave"
+    @dragover="ondragover"
+    @drop="ondropped"
+    class="drop--header"
+  >
+    <h1 class="drop--logo">
+      <span class="drop--logo-j">J</span><span class="drop--logo-p">P</span><span class="drop--logo-n">N</span><span class="drop--logo-g">G</span>
+    </h1>
+    <img 
+      id="rooster"
+      alt="A saucy rooster"
+      class="drop--rooster" 
+      src="../assets/rooster-250px.png"
+      draggable="true"
+      @dragstart="ondragrooster"
+      >
+    <div class="drop--zone">
+      <div class="drop--zone_cta">
         <svg 
+          aria-hidden="true"
           xmlns="http://www.w3.org/2000/svg" 
-          width="32" 
-          height="32" 
+          width="24" 
+          height="24" 
           viewBox="0 0 24 24" 
-          fill="none" 
-          stroke="#606060" 
-          stroke-width="3" 
+          fill="#ff3344" 
+          stroke="#ff4466" 
+          stroke-width="1" 
           stroke-linecap="round" 
-          stroke-linejoin="round">
-  <path d="M3,17v3a2,2,0,0,0,2,2H19a2,2,0,0,0,2-2V17"/>
-  <polyline points="8 12 12 16 16 12"/>
-  <line x1="12" y1="2" x2="12" y2="16"/>
-</svg><span>drop your PNGs here</span>
+          stroke-linejoin="round"><path d="M20.84,4.61a5.5,5.5,0,0,0-7.78,0L12,5.67,10.94,4.61a5.5,5.5,0,0,0-7.78,7.78l1.06,1.06L12,21.23l7.78-7.78,1.06-1.06A5.5,5.5,0,0,0,20.84,4.61Z"/>
+        </svg><span>drop your PNGs here</span>
         </div>
       </div>
-      <div class="drop-zone_logo">
-        <span class="drop-zone_logo-j">J</span><span class="drop-zone_logo-p">P</span><span class="drop-zone_logo-n">N</span><span class="drop-zone_logo-g">G</span>
-      </div>
-      <img class="rooster" src="../assets/rooster-250px.png">
     </div>
-  </section>
+  </header>
 </template>
 
 <script>
@@ -42,10 +49,25 @@ const supported = pngToJPNG.supported &&
 
 const errors = {
   notPNG: "This file is not a png.",
+  notIMG: "This file is not an image.",
   notTransparent: "This image has no transparency."
 };
 
 let id = 0;
+
+function createRecord_(name){
+  return {
+    id: ++id,
+    name,
+    error: null,
+    removed: false,
+    input: {
+      img: null
+    },
+    output: null,
+    versions: []
+  };
+}
 function createRecord(file){
   return {
     id: ++id,
@@ -97,9 +119,9 @@ function readImage(record){
     reader.addEventListener('load', (e) => {
       record.input.dataURL = reader.result;
       const img = new Image();
-      img.onerror = (error) => {
+      img.onerror = () => {
         img.onerror = img.onload = null;
-        record.error = error;
+        record.error = errors.notIMG;
         reject(record);
       }
       img.onload = () => {
@@ -125,9 +147,14 @@ function readImage(record){
   });
 }
 
+
 function findQuality(record, size){
   return new Promise( (resolve, reject) => {
     pngToJPNG.calibrate(record.input.dataURL, size, (quality) => {
+      quality.original = record.input.size;
+      quality.originalKB =  Math.round(record.input.size/1024);
+      quality.kb = Math.round(quality.size/1024);
+      quality.ratio = quality.size/record.input.size;
       record.sizes.push( quality );
       record.sizes.sort( (a, b) => { return b.quality - a.quality } );
       resolve(quality);
@@ -150,14 +177,67 @@ function convertToJPNG(record){
   });
 }
 
+function drawIMG(id){
+  const img = document.getElementById(id),
+        canvas = document.createElement('canvas'),
+        ctx = canvas.getContext('2d');
+  canvas.width = img.width; canvas.height = img.height;
+  ctx.drawImage(img, 0, 0);
+  function readBlob(blob){
+    const reader = new FileReader();
+    reader.addEventListener('error', (e) => { 
+      /*
+      record.error = reader.error;
+      reject(record);
+      */
+    });
+    reader.addEventListener('load', (e) => {
+      /*record.input.dataURL = reader.result;*/
+      console.log(reader.result);
+    });
+    reader.readAsDataURL(blob);
+  }
+  canvas.toBlob((blob) => { readBlob(blob); }, 'image/png', 1.0);
+}
+
 export default {
   name: 'drop-zone',
   methods: {
     ondragenter(){},
     ondragleave(){},
+    ondragrooster(e){
+      e.dataTransfer.setData('text', 'rooster');
+    },
+    ondragover(e){ e.preventDefault(); return false; },
+    ondropped_(e){
+      const name = file.name.substring(0, file.name.lastIndexOf('.')),
+            record = createRecord(name);
+
+      function onpng({ src, size, img }){
+        toJPNG.createVersions(img, size, (versions) => {
+          record.versions = versions;
+          toJPNG.create
+          this.$emit('appendJPNGResults', [record]);
+        });
+      }
+      function onerr(error){ // string | Error | { img, error }
+        if (error && error.img) {
+          record.input.img = error.img;
+          record.error = error.error;
+        }
+        this.$emit('appendJPNGResults', [record]);
+      }
+      toJPNG.readFile(file, onpng, onerr);
+    },
     ondropped(e){
       // Note: `files` is a `FileList` object, which looks like an Array object, 
       // but is not.
+      e.preventDefault();
+      const id = e.dataTransfer.getData('text/plain');
+      if (id) {
+        drawIMG(id);
+        return;
+      }
       const files = e.dataTransfer.files,
             len = files.length, records = [];
       for (let file, i = 0; i < len; i++) {
@@ -180,27 +260,20 @@ export default {
 }
 </script>
 <style>
-.drop-zone-section {
+.drop--header {
   position: relative;
+  padding: 20px;
   margin-bottom: 0;
   background-color: #f0f0f0;
-  /*
-  background-color: #fff;
-  background-size: 20px 20px;
-  background-position: 0 0, 10px 10px;
-  background-image: 
-    linear-gradient(45deg, #e7e7e7 25%, transparent 25%, transparent 75%, #e7e7e7 75%, #e7e7e7), 
-    linear-gradient(45deg, #e7e7e7 25%, transparent 25%, transparent 75%, #e7e7e7 75%, #e7e7e7);
-  */
   background-image: repeating-linear-gradient(
     40deg,
     #fff,
-    #fff 15px,
-    #f0f0f0 15px,
-    #f0f0f0 30px
+    #fff 20px,
+    #f7f7f7 20px,
+    #f7f7f7 40px
   );
 }
-.drop-zone {
+.drop--zone {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -213,58 +286,76 @@ export default {
   border: 3px dashed #ddd;
   border-radius: 4px;
 
-  background: rgba(255,255,255,.5);
+  background: rgba(255,255,255,.45);
 
-  font-size: 38px;
-  font-weight: 700;
+  font-size: 24px;
+  font-weight: 400;
   letter-spacing: 1px;
-  color: rgba(255,68,255,1);/*#ff44ff;*/
-  /*text-shadow: 2px 2px 1px rgba(0,212,212,1);*/
+  color: #555;
 }
-.drop-zone  svg {
+.drop--zone  svg {
   margin: 0 5px 0 0;
   padding: 5px 0;
-  width: 52px;
-  height: 52px;
+  width: 48px;
+  height: 48px;
 }
 .dnd-not-supported {
   background-color: #ff0000;
 }
-.drop-zone_cta {
+.drop--zone_cta {
   display: flex;
   justify-content: center;
-  align-items: flex-end;
-  line-height: 52px;
+  align-items: center;
+  text-align: center;
+  user-select: none;
 }
-.drop-zone_logo {
+.drop--logo {
   position: absolute;
   top: 30px;
   left: 10px;
   font-size: 48px;
   font-weight: 700;
-  color: #f0f0f0;
-  text-shadow: 0px 0px 8px rgba(0,0,0,.23);
+  color: #fff;
+  text-shadow: 0px 0px 8px rgba(0,0,0,.16);
 }
-.drop-zone_logo-j {
+.drop--logo-j {
   background-color: #222;
-  padding: 5px 16px;
+  padding: 5px 18px;
+
+  background-image: linear-gradient( 45deg, #494949 50%, #00eeee 50.5%);
 }
-.drop-zone_logo-p {
+.drop--logo-p {
   background-color: #333;
-  padding: 5px 14px;
+  padding: 5px 18px;
+  background-image: linear-gradient( 45deg, #333 50%, #00eeee 50.5%);
 }
-.drop-zone_logo-n {
+.drop--logo-n {
   background-color: #444;
-  padding: 5px 14px;
+  padding: 5px 18px;
+  background-image: linear-gradient( 45deg, #333 50%, #666 50.5%);
 }
-.drop-zone_logo-g {
+.drop--logo-g {
   background-color: #555;
-  padding: 5px 14px;
+  padding: 5px 18px;
+  background-image: linear-gradient( 45deg, #333 50%, #00eeee 50.5%);
 }
-.rooster {
-  pointer-events: none;
+.drop--rooster {
   position: absolute;
   right: -20px;
   bottom: -10px;
+  width: 125px;
+  height: 130px;
+}
+@media (min-width: 600px) {
+  .drop--rooster {
+    width: 188px;
+    height: 195px;
+  }
+}
+@media (min-width: 768px) {
+  .drop--rooster {
+    width: 250px;
+    height: 260px;
+  }
 }
 </style>

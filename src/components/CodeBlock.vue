@@ -8,7 +8,7 @@
 
 <script>
 export default {
-  name: 'app',
+  name: 'code-block',
   methods: {
     focus(){
       this.$el.focus();

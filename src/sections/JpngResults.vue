@@ -4,22 +4,19 @@
       <h2>Results</h2>
     </header>
     <ul class="jpng-results_ul">
-      <li
-          is="jpng-result-or-error"
+      <jpng-result
           v-for="record in results" 
           :key="record.id" 
           :record="record"
-      ></li>
+      ></jpng-result>
     </ul>
   </section>
 </template>
 <script>
-import JpngResultOrError from '../components/JpngResultOrError.js';
-//import ResultItem from '../components/ResultItem.vue';
+import JpngResult from '../components/JpngResult.vue';
 export default {
   name: 'jpng-results',
-  components: { 'jpng-result-or-error': JpngResultOrError },
-  /*components: { ResultItem },*/
+  components: { JpngResult },
   props: ['results']
 }
 </script>
@@ -31,7 +28,7 @@ export default {
   list-style: none;
   margin: 0;
   padding: 20px;
-  background-color: #dbdfe8;
+  background-color: #eee;/*#dbdfe8;*/
 }
 .jpng-results > ul > li {
   margin: 0 0 20px 0;
@@ -53,4 +50,5 @@ export default {
   font-size: 12px;
   padding-top: 4px;
 }
+
 </style>
