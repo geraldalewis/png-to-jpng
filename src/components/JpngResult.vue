@@ -1,34 +1,38 @@
 <template>
   <li>
     <jpng-result-header 
-      :filename="record.input.name" 
+      :filename="record.filename" 
       :filesize="originalKB"
       :error="record.error"
       @close="close"
       ></jpng-result-header>
     <div v-if="!!record.error" class="result--error">{{ record.error }}</div>
     <div class="result--image">
-      <img v-if="!!(record.error && errorSrc)" :src="errorSrc">
-      <img v-else="!!record.error" :src="jpngSrc" class="bg-transparent">
+      <img 
+        v-if="!!(record.error && record.input)" 
+        :src="record.input">
+      <img 
+        v-else="!!record.error" 
+        :src="record.output" 
+        class="bg-transparent">
     </div>
     <div class="result--output" v-if="!record.error">
       <size-picker 
-        :versions="sizes" 
+        :record="record" 
         :selected="size"
-        :resultId="record.id"
         @sizeChanged="onsize"
       ></size-picker>
-      <download-button :record="record"></download-button>
+      <download-button v-if="record.download" :record="record"></download-button>
     </div>
     <img-code :record="record" v-if="!record.error">></img-code>
   </li>
 </template>
 <script>
+import toJPNG from '../../lib/to-jpng';
 import SizePicker from '../components/SizePicker.vue';
 import DownloadButton from '../components/DownloadButton.vue';
 import ImgCode from '../components/ImgCode.vue';
 import JpngResultHeader from '../components/JpngResultHeader.vue';
-import convertPNG from '../utils/convert-png';
 
 export default {
   name: 'jpng-result',
@@ -40,35 +44,35 @@ export default {
   },
   components: { JpngResultHeader, SizePicker, DownloadButton, ImgCode },
   computed: {
-    jpngSrc(){
-      return this.record.result.dataURL;
-    },
-    errorSrc(){
-      return this.record.input.img ? this.record.input.dataURL : '';
-    },
     originalKB(){
-      return Math.round(this.record.input.size  / 1024);
+      return Math.round(this.record.size  / 1024);
     },
-    sizes(){
-      return this.record.sizes;
+    versions(){
+      return this.record.versions;
     },
     size: {
       get: function(){
-        return this.sizes[this.size_];
+        return this.versions[this.size_];
       },
       set: function(size){
-        const sizes = this.sizes, len = sizes.length;
+        const versions = this.versions, len = versions.length;
         for (let i = 0; i < len; i++) {
-          if (size === sizes[i]) { this.size_ = i; return; }
+          if (size === versions[i]) { this.size_ = i; return; }
         }
         this.size_ = 0;
       }
     }
   },
   methods: {
-    onsize(size){
-      this.size = size;
-      convertPNG(this.record, size.quality).then( () => {
+    onsize(version){
+      const record = this.record, w = record.w, h = record.h,
+            quality = version.quality;
+      this.size = version;
+      toJPNG.createCompositedJpngDataURL(record.jpng, w, h, quality, (dataURL) => {
+        this.record.output = dataURL;
+        setTimeout(() => {
+          this.record.download = toJPNG.createJPNGDataURL(record.img, quality);
+        }, 100);
       });
     },
     close(){

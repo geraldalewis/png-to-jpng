@@ -1,6 +1,6 @@
 <template>
   <a 
-    :href="downloadURL"
+    :href="record.download"
     :download="jpngFilename"
     class="download"
   ><div class="download--content">
@@ -20,13 +20,6 @@
 export default {
   name: 'download-button',
   props: ['record'],
-  data: function(){
-    console.log("Creating data object", this.record);
-    return {
-      downloadURL: URL.createObjectURL(this.record.output.blob)
-    };
-  },
-  disposed(){ URL.revokeObjectURL(this.record.output.blob); },
   computed: {
     jpngFilename(){
       return this.record.name + '-jpng.jpg';

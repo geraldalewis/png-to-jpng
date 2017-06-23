@@ -1,6 +1,24 @@
 <template>
   <article>
     <header><h2>Usage</h2></header>
+    <pre 
+        contenteditable="true"
+        spellcheck="false"
+        class="code"
+    ><code class="language-clike" v-html="npmCode"></code></pre>
+    <pre 
+        contenteditable="true"
+        spellcheck="false"
+        class="code"
+    ><code class="language-javascript" v-html="importCode"></code></pre>
+
+    Then, to automatically convert any &lt;img&gt; elements with a data-jpng attribute of "auto", call:
+<pre 
+        contenteditable="true"
+        spellcheck="false"
+        class="code"
+    ><code class="language-javascript" v-html="initCode"></code></pre>
+    <!--
     <p>You'll need to include the jpng library to transform the compressed JPG files back into PNGs. jpng can be installed via npm or yarn, and imported as an ES6 module if you're using a modern bundler. There's also an <span class="mono code-inline">iife</span> version that can be downloaded from a CDN.</p><p>Once included, any <span class="mono code-inline">img</span> tags with a <span class="mono code-inline">data-jpng</span> attribute set to <span class="mono code-inline">"loading"</span> will be automatically converted.</p>
     <article>
       <header><h3>CDN</h3></header>
@@ -21,14 +39,24 @@
     visibility: <span class="code__string">hidden</span>;
   }</code-block>
     </article>
+    -->
   </article>
 </template>
 <script>
-import CodeBlock from '../components/CodeBlock.vue';
 
 export default {
   name: 'jpng-usage',
-  components: { CodeBlock }
+  computed: {
+    npmCode(){
+      return Prism.highlight(`npm install jpng`, Prism.languages.clike);
+    },
+    importCode(){
+      return Prism.highlight(`import jpng from 'jpng';`, Prism.languages.javascript);
+    },
+    initCode(){
+      return Prism.highlight(`jpng.auto();`, Prism.languages.javascript);
+    }
+  }
 }
 </script>
 <style>

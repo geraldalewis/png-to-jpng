@@ -2,9 +2,7 @@
   <article class="about-jpng">
     <h2 class="visually-hidden">JPNG</h2>
     <p><strong>JPNG makes your PNGs up to 80% smaller.</strong> 
-    It works by converting the transparency data into a greyscale "matte". The color and matte are bundled into a single JPG. When it's time to render, JavaScript and &lt;canvas&gt; combine the color and matte back into a PNG.
-    <!-- 
-    It works by converting transparency data into a greyscale matte that can be saved (along with the color data) as a JPG. When the image is served, JavaScript and &lt;canvas&gt; combine the color and matte back into a PNG.--></p>
+    It works by turning your PNG's transparency data into a greyscale "matte". The color image and matte are bundled into a single JPG, and when it's time to render, JavaScript and &lt;canvas&gt; combine them back into a PNG.</p>
     <figure class="diagram">
       <div class="diagram--content">
         <div class="diagram--frame">

@@ -1,32 +1,23 @@
 <template>
   <div class="size-input">
     <input
-      :id="'version-' + resultId + '-' + idx"
+      :id="'version-' + record.id + '-' + idx"
       type="radio"
       class="size-input--input"
-      :name="'version-' + resultId"
+      :name="'version-' + record.id"
       :checked="version === selected"
       @change="oninput(version)"
     >
     <label
-      :for="'version-' + resultId + '-' + idx"
+      :for="'version-' + record.id + '-' + idx"
       :class="['size-input--label', 'size-input--label-bg-' + idx]"
-    ><div class="size-input--filesize"><span class="size-input--size">{{ kb }}</span><span class="mono size-input--unit">kb</span></div><div class="size-input--percent"><span class="size-input--size">{{percent}}</span><span class="mono size-input--unit">%</span></div></label>
+    ><div class="size-input--filesize"><span class="size-input--size">{{ version.kb }}</span><span class="mono size-input--unit">kb</span></div><div class="size-input--percent"><span class="size-input--size">{{ version.percent }}</span><span class="mono size-input--unit">%</span></div></label>
   </div>
 </template>
 <script>
 export default {
   name: 'size-input',
-  props: ['version', 'selected', 'idx', 'resultId'],
-  computed: {
-    kb(){ return Math.round(this.version.size/1024); },
-    percent(){
-      const ratio = this.version.ratio,
-            diff = -(100 - Math.round( ratio * 100));
-      if (diff >= 0) return '+' + diff + '%';
-      return diff;
-    }
-  },
+  props: ['record', 'version', 'selected', 'idx'],
   methods: {
     oninput(version){ this.$emit('changed', version); }
   }

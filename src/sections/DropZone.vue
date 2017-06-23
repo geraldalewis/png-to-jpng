@@ -39,165 +39,27 @@
 </template>
 
 <script>
-import pngToJPNG from '../../lib/png-to-jpng';
-import convertPNG from '../utils/convert-png';
-import jpng from 'jpng';
-
-const supported = pngToJPNG.supported &&
-                  typeof FileReader === 'function' && 
-                  !!(FileReader.prototype.readAsDataURL);
-
-const errors = {
-  notPNG: "This file is not a png.",
-  notIMG: "This file is not an image.",
-  notTransparent: "This image has no transparency."
-};
+import { toDataURL as jpngToDataURL } from 'jpng';
+import toJPNG from '../../lib/to-jpng';
+//import roosterSrc from '../assets/rooster-250px-jpng.jpg';
 
 let id = 0;
-
-function createRecord_(name){
-  return {
-    id: ++id,
-    name,
-    error: null,
-    removed: false,
-    input: {
-      img: null
-    },
-    output: null,
-    versions: []
-  };
-}
 function createRecord(file){
   return {
     id: ++id,
     name: file.name.substring(0, file.name.lastIndexOf('.')),
+    filename: file.name,
+    size: file.size,
     error: null,
     removed: false,
-    input: {
-      file,
-      type: file.type,
-      name: file.name, 
-      size: file.size, 
-      dataURL: null, 
-      img: null,
-      w: 0, h: 0
-    },
+    w: 0, h: 0,
+    img: null,
+    jpng: null,
+    input: null,
     output: null,
-    result: {
-      img: null,
-      canvas: null,
-      dataURL: null
-    },
-    sizes: []
+    download: null,
+    versions: []
   };
-}
-
-function hasTransparency(img){
-  const canvas = document.createElement('canvas'),
-        ctx = canvas.getContext('2d'),
-        w = img.width, h = img.height;
-  canvas.width  = w;
-  canvas.height = h;
-  ctx.drawImage(img, 0, 0);
-  const data = ctx.getImageData(0, 0, w, h),
-        channels = data.data, len = channels.length;
-
-  for (let i = 0; i < len; i += 4) {
-    if (channels[i + 3] !== 255) return true;
-  }
-  return false;
-}
-
-function readImage(record){
-  return new Promise( (resolve, reject) => {
-    const reader = new FileReader();
-    reader.addEventListener('error', (e) => { 
-      record.error = reader.error;
-      reject(record);
-    });
-    reader.addEventListener('load', (e) => {
-      record.input.dataURL = reader.result;
-      const img = new Image();
-      img.onerror = () => {
-        img.onerror = img.onload = null;
-        record.error = errors.notIMG;
-        reject(record);
-      }
-      img.onload = () => {
-        img.onerror = img.onload = null;
-        record.input.w = img.width;
-        record.input.h = img.height;
-        record.input.img = img;
-        if (record.input.type === 'image/png') {
-          if (hasTransparency(img)) resolve(record);
-          else {
-            record.error = errors.notTransparent;
-            reject(record);
-          }
-        }
-        else {
-          record.error = errors.notPNG;
-          reject(record);
-        }
-      };
-      img.src = record.input.dataURL;
-    });
-    reader.readAsDataURL(record.input.file);
-  });
-}
-
-
-function findQuality(record, size){
-  return new Promise( (resolve, reject) => {
-    pngToJPNG.calibrate(record.input.dataURL, size, (quality) => {
-      quality.original = record.input.size;
-      quality.originalKB =  Math.round(record.input.size/1024);
-      quality.kb = Math.round(quality.size/1024);
-      quality.ratio = quality.size/record.input.size;
-      record.sizes.push( quality );
-      record.sizes.sort( (a, b) => { return b.quality - a.quality } );
-      resolve(quality);
-    });
-  });
-}
-
-function convertToJPNG(record){
-  return new Promise( (resolve, reject) => {
-    const qualities = [.5, .25, .15, .1].map( (q) => {
-      return Math.round( (record.input.size * q)/ 1024 );
-    });
-    const promises = qualities.map( (quality) => findQuality(record, quality) );
-    Promise.all(promises).then( () => {
-      const quality = record.sizes[0].quality;
-      convertPNG(record, quality).
-        then( (record) => resolve(record) ).
-        catch( (record) => reject(record) );
-    });
-  });
-}
-
-function drawIMG(id){
-  const img = document.getElementById(id),
-        canvas = document.createElement('canvas'),
-        ctx = canvas.getContext('2d');
-  canvas.width = img.width; canvas.height = img.height;
-  ctx.drawImage(img, 0, 0);
-  function readBlob(blob){
-    const reader = new FileReader();
-    reader.addEventListener('error', (e) => { 
-      /*
-      record.error = reader.error;
-      reject(record);
-      */
-    });
-    reader.addEventListener('load', (e) => {
-      /*record.input.dataURL = reader.result;*/
-      console.log(reader.result);
-    });
-    reader.readAsDataURL(blob);
-  }
-  canvas.toBlob((blob) => { readBlob(blob); }, 'image/png', 1.0);
 }
 
 export default {
@@ -209,53 +71,51 @@ export default {
       e.dataTransfer.setData('text', 'rooster');
     },
     ondragover(e){ e.preventDefault(); return false; },
-    ondropped_(e){
+    createJpngFromFile(file){
       const name = file.name.substring(0, file.name.lastIndexOf('.')),
-            record = createRecord(name);
+            record = createRecord(file);
 
-      function onpng({ src, size, img }){
+      const onpng = ({ src, size, img }) => {
+        record.img = img;
+        record.w = img.width;
+        record.h = img.height;
         toJPNG.createVersions(img, size, (versions) => {
+          record.jpng = toJPNG.createJPNGCanvas(img);
           record.versions = versions;
-          toJPNG.create
-          this.$emit('appendJPNGResults', [record]);
+          toJPNG.createCompositedJpngDataURL(record.jpng, record.w, record.h, versions[0].quality, (dataURL) => {
+          //toJPNG.createCompositedJpngDataURL(img, versions[0].quality, (dataURL) => {
+            record.output = dataURL;
+            setTimeout(() => {
+              record.download = toJPNG.createJPNGDataURL(img, versions[0].quality);
+        }, 100);
+          });
         });
+        this.$emit('appendJPNGResults', [record]);
       }
-      function onerr(error){ // string | Error | { img, error }
+      const onerr = (error) => { // string | Error | { img, error }
         if (error && error.img) {
-          record.input.img = error.img;
+          record.img = error.img;
+          record.input = error.src;
           record.error = error.error;
         }
+        else record.error = error;
         this.$emit('appendJPNGResults', [record]);
       }
       toJPNG.readFile(file, onpng, onerr);
     },
     ondropped(e){
+      e.preventDefault();
+      const files = e.dataTransfer.files,
+            len = files.length;
+      //const id = e.dataTransfer.getData('text/plain');
+      //if (id) { drawIMG(id); return; }
       // Note: `files` is a `FileList` object, which looks like an Array object, 
       // but is not.
-      e.preventDefault();
-      const id = e.dataTransfer.getData('text/plain');
-      if (id) {
-        drawIMG(id);
-        return;
-      }
-      const files = e.dataTransfer.files,
-            len = files.length, records = [];
-      for (let file, i = 0; i < len; i++) {
-        file = files.item(i);
-        records.push(createRecord(file));
-      }
-      const promises = records.map( (record) => {
-        return readImage(record).
-          then(convertToJPNG).
-          catch( (record) => Promise.resolve(record));
-      });
-      Promise.all(promises).then( (records) => {
-        this.$emit('appendJPNGResults', records);
-      });
+      for (let i = 0; i < len; i++) this.createJpngFromFile(files.item(i));
     }
   },
   mounted(){
-    if (!supported) this.$el.classList.add('dnd-not-supported');
+    if (!toJPNG.supported) this.$el.classList.add('dnd-not-supported');
   }
 }
 </script>
@@ -322,7 +182,7 @@ export default {
   background-color: #222;
   padding: 5px 18px;
 
-  background-image: linear-gradient( 45deg, #494949 50%, #00eeee 50.5%);
+  background-image: linear-gradient( 45deg, #4e4e4e 50%, #00eeee 50.5%);
 }
 .drop--logo-p {
   background-color: #333;

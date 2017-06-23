@@ -1,14 +1,15 @@
 <template>
   <fieldset class="sizes">
-    <legend>Select a size: (was {{ versions[0].originalKB }}kb)</legend>
+    <legend>Select a size: (was {{ Math.round(record.size/1024) }}kb)</legend>
     <div class="sizes--inputs">
       <size-input
+        v-if="versions.length > 0"
         v-for="(version, index) in versions"
         :key="version.size"
         :version="version"
         :idx="index"
+        :record="record"
         :selected="selected"
-        :resultId="resultId"
         @changed="onchanged"
       ></size-input>
     </div>
@@ -18,9 +19,11 @@
 import SizeInput from './SizeInput.vue';
 export default {
   name: 'size-picker',
-  props: ['versions', 'selected', 'resultId'],
+  props: ['record', 'selected'],
   components: { SizeInput },
-  mounted(){ console.log(this.selected); },
+  computed: {
+    versions(){ return this.record.versions; },
+  },
   methods: {
     onchanged(version){ this.$emit("sizeChanged", version); }
   }

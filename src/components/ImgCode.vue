@@ -19,15 +19,15 @@ export default {
     jpngFilename(){
       return this.record.name + '-jpng.jpg';
     },
-    width(){ return this.record.input.w; },
-    height(){ return this.record.input.h; },
+    width(){ return this.record.w; },
+    height(){ return this.record.h; },
     code(){
       const html = Prism.highlight(`<img onload="XXX"
      src="${ this.jpngFilename }"
      width="${ this.width }"
      height="${ this.height }"
-     data-jpng="loading">`, Prism.languages.html);
-      const onload = Prism.highlight(`jpng.resetSrc(this, ${ this.width }, ${ this.height })`, Prism.languages.javascript);
+     data-jpng="auto">`, Prism.languages.html);
+      const onload = Prism.highlight(`window.jpng && jpng.replace(this, ${ this.width }, ${ this.height })`, Prism.languages.javascript);
       return html.replace('XXX', onload);
     }
   },
@@ -41,6 +41,7 @@ export default {
 </script>
 <style>
 .img-code > pre {
+  padding: 10px 20px;
   margin-bottom: 0px;
 }
 .code {
